@@ -3,7 +3,7 @@
 <html lang="zh-cmn-Hans">
 <head>
     <meta charset="UTF-8">
-    <title>聊天</title>
+    <title>MyMessage</title>
     <!--文档 http://www.materialscss.com -->
     <link rel="stylesheet" href="css/materialize.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -17,7 +17,7 @@
 <nav>
     <div class="nav-wrapper white">
         <a href="#" class="brand-logo black-text"
-           style="font-size:28px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Message</a>
+           style="font-size:28px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyMessage</a>
         <ul id="nav-mobile" class="right hide-on-med-and-down">
             <li><a class="black-text">20165248@stu.neu.edu.cn</a></li>
             <li><a href="login.html"><i class="material-icons black-text" style="vertical-align:bottom;">exit_to_app</i></a>
@@ -58,14 +58,10 @@
 
         <div class="input-field col s12">
             <!--接收窗口-->
-            <label for="recvText">消息</label>
-            <textarea disabled id="recvText" class="materialize-textarea " type="text"
-                      style="overflow: auto; height: 370px;"></textarea>
-
+            <textarea disabled id="recvText" class="materialize-textarea black-text" type="text"
+                      style="overflow: auto; height: 370px;" placeholder="暂无信息"></textarea>
         </div>
-        <script>
-            $('#recvText').trigger('autoresize');
-        </script>
+
         <div class="input-field col s12">
             <!--发送窗口-->
             <i class="material-icons prefix">mode_edit</i>
@@ -73,9 +69,65 @@
         </div>
     </div>
 
-    <script>
+    <script type="application/javascript">
+        var Chat = {};
+        Chat.socket = null;
+        Chat.connect = (function (host) {
+            if ('WebSocket' in window) {
+                Chat.socket = new WebSocket(host);
+            } else if ('MozWebSocket' in window) {
+                Chat.socket = new MozWebSocket(host);
+            }
+            else {
+                Console.log('错误：WebSocket 不支持您的浏览器');
+                return;
+            }
 
+            Chat.socket.onopen = function () {
+                Console.log('信息：WebSocket 连接已建立');
+                document.getElementById('sendText').onkeydown = function (event) {
+                    if (event.keyCode === 13)
+                        Chat.sendMessage();
+                };
+            };
+
+            Chat.socket.onclose = function () {
+                document.getElementById('sendText').onkeydown = null;
+                Console.log('信息：WebSocket 已关闭');
+            };
+
+            Chat.socket.onmessage = function (message) {
+                console.log(message.data);
+            };
+        });
+
+        Chat.initialize = function () {
+            if (window.location.protocol === 'http:') {
+                Chat.connect('ws://' + window.location.host + '/WebSocket/ChatSocket');
+            } else {
+                Chat.connect('wss://' + window.location.host + '/WebSocket/ChatSocket');
+            }
+        };
+
+        Chat.sendMessage = (function () {
+            var message = document.getElementById("sendText").value;
+            if (message !== '') {
+                Chat.socket.send(message);
+                document.getElementById('sendText').value = "";
+            }
+        });
+
+        var Console = {};
+
+        Console.log = (function (message) {
+            var console = document.getElementById("recvText");
+            console.innerText += message + "\n";
+            console.trigger('autoresize');
+        });
+
+        Chat.initialize();
     </script>
+
 </div>
 </body>
 </html>

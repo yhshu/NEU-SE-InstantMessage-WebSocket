@@ -1,12 +1,13 @@
 import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+@ServerEndpoint("/ChatSocket")
 public class ChatAnnotation {
     private Session session; // 与客户端通信的session
     private static Set<ChatAnnotation> connections = new HashSet<ChatAnnotation>();
-
 
     @OnOpen
     public void start(Session session) throws IOException {
