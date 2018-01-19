@@ -33,10 +33,20 @@ public class ChatAnnotation {
     }
 
     @OnMessage
-    public void incoming(String content) throws IOException {
-        // 消息推送给所有的客户端
-        String message = String.format("%s %s %s", nickname, "：", content);
-        broadcast(message, nickname, LocalDateTime.now(), Message.NORMAL);
+    public void incoming(String Msg) throws IOException {
+        Gson gson = new Gson();
+        Message message = gson.fromJson(Msg, Message.class);
+        String content = message.getContent();
+
+        if (message.getReceiver().equals("group")) {
+            // 消息推送给所有的客户端
+            String sendString = String.format("%s %s %s", nickname, "：", content);
+            broadcast(sendString, nickname, LocalDateTime.now(), Message.NORMAL);
+        } else {
+            // 消息推送给指定用户
+            String sendString = String.format("[私密]%s %s %s", nickname, "：", content);
+            unicast(sendString, nickname, message.getReceiver(), LocalDateTime.now(), Message.NORMAL);
+        }
     }
 
     @OnClose
@@ -78,7 +88,7 @@ public class ChatAnnotation {
         Gson gson = new GsonBuilder().create();
         String msgToJson = gson.toJson(Msg);
         for (ChatAnnotation client : connections) {
-            if (client.nickname.equals(receiver)) {
+            if (client.nickname.equals(receiver) || client.nickname.equals(sender)) {
                 try {
                     synchronized (client) { // 同步锁
                         client.session.getBasicRemote().sendText(msgToJson);

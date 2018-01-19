@@ -35,16 +35,16 @@
         12-columns-wide on small screens  -->
 
         <div style="border: 0;" class="collection" id="menulist">
-            <a style="border: 0; " href="GroupChat.html" class="collection-item grey lighten-4 grey-text hoverable"><i
+            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable" onclick="goGroup()"><i
                     class="material-icons "
                     style="vertical-align:bottom">group</i>&nbsp;&nbsp;我的群组</a>
-            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable"><i
+            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable" onclick="goService()"><i
                     class="material-icons "
                     style="vertical-align:bottom">question_answer</i>&nbsp;&nbsp;在线客服</a>
-            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable"><i
+            <a style="border: 0; " class="collection-item grey lighten-4 grey-text"><i
                     class="material-icons"
                     style="vertical-align:bottom">person</i>&nbsp;&nbsp;在线用户</a>
-            <div id="onlineList" style="padding: 0 13px;">
+            <div id="onlineList" style="padding: 0 18px;">
                 <!--在线用户列表-->
             </div>
         </div>
@@ -60,8 +60,9 @@
 
         <div class="input-field col s12">
             <!--接收窗口-->
+            <h5 id="chatTitle">离线</h5>
             <textarea disabled id="recvText" class="materialize-textarea black-text" type="text"
-                      style="overflow: auto; height: 370px;" placeholder="暂无信息"></textarea>
+                      style="overflow: auto; height: 320px;" placeholder="暂无信息"></textarea>
         </div>
 
         <div class="input-field col s12">
@@ -94,6 +95,7 @@
             };
 
             Chat.socket.onclose = function () { // 连接断开时
+                document.getElementById('chatTitle').innerText = "离线";
                 document.getElementById('sendText').onkeydown = null;
                 Console.log('信息：连接已断开');
             };
@@ -139,10 +141,12 @@
             }
         };
 
-        Chat.sendMessage = (function () { // 发送消息，清空发送窗口
-            var message = document.getElementById("sendText").value;
-            if (message !== '') {
-                Chat.socket.send(message);
+        Chat.sendMessage = (function () { // 发送消息
+            var content = document.getElementById("sendText").value; // 发送框中的消息内容
+            if (content !== '') {
+                var Message = {'content': content, 'receiver': receiver};
+                var jsonMessage = JSON.stringify(Message);
+                Chat.socket.send(jsonMessage);
                 document.getElementById('sendText').value = '';
             }
         });
@@ -156,8 +160,29 @@
         });
 
         Chat.initialize();
+
     </script>
 
+    <script type="text/javascript" language="javascript">
+        var receiver = "";
+
+        function goGroup() {
+            document.getElementById("chatTitle").innerText = "我的群组";
+            receiver = "group";
+        }
+
+        goGroup();// 打开页面后自动执行!
+
+        $(document).on("click", "button", function () {
+            receiver = this.id.substring(4);
+            document.getElementById('chatTitle').innerText = "用户" + receiver;
+        });
+
+        function goService() {
+            document.getElementById("chatTitle").innerText = "在线客服";
+            receiver = "service";
+        }
+    </script>
 </div>
 </body>
 </html>
