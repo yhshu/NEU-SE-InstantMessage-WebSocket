@@ -7,43 +7,44 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 
 @ServerEndpoint(value = "/ChatSocket")
 public class ChatAnnotation {
     private Session session; // 与客户端通信的session
+    private String nickname;
     private static Set<ChatAnnotation> connections = new HashSet<ChatAnnotation>();
 
     @OnOpen
     public void start(Session session) throws IOException {
         this.session = session;
+        this.nickname = session.getId();
         // 把当前客户端对应的ChatAnnotation对象加入到集合中
         connections.add(this);
 
         // 广播新用户加入群聊的信息
-        String message = String.format("%s %s", session.getId(), "加入了群聊");
-        broadcast(message, session.getId(), LocalDateTime.now(), Message.LOGIN);
+        String message = String.format("用户 %s %s", nickname, "加入了群聊");
+        broadcast(message, nickname, LocalDateTime.now(), Message.LOGIN);
 
         // 向新用户单播在线列表
         String[] onlineList = getOnlineList();
         Gson gson = new GsonBuilder().create();
         String JsOnlineList = gson.toJson(onlineList);
-        unicast(JsOnlineList, "Server", session.getId(), LocalDateTime.now(), Message.LIST);
+        unicast(JsOnlineList, "Server", nickname, LocalDateTime.now(), Message.LIST);
     }
 
     @OnMessage
     public void incoming(String content) throws IOException {
         // 消息推送给所有的客户端
-        String message = String.format("%s %s %s", session.getId(), "：", content);
-        broadcast(message, session.getId(), LocalDateTime.now(), Message.NORMAL);
+        String message = String.format("%s %s %s", nickname, "：", content);
+        broadcast(message, nickname, LocalDateTime.now(), Message.NORMAL);
     }
 
     @OnClose
     public void end() {
         // 连接中断时
         connections.remove(this);
-        String message = String.format("%s %s", session.getId(), "连接已中断");
-        broadcast(message, session.getId(), LocalDateTime.now(), Message.QUIT);
+        String message = String.format("用户 %s %s", nickname, "退出了聊天");
+        broadcast(message, nickname, LocalDateTime.now(), Message.QUIT);
     }
 
     @OnError
@@ -66,7 +67,7 @@ public class ChatAnnotation {
                 } catch (IOException e1) {
                     // Ignore
                 }
-                String disconnect = String.format("%s %s", client.session.getId(), "连接已中断");
+                String disconnect = String.format("用户 %s %s", client.nickname, "连接已中断");
                 broadcast(disconnect, sender, LocalDateTime.now(), Message.QUIT);
             }
         }
@@ -77,23 +78,32 @@ public class ChatAnnotation {
         Gson gson = new GsonBuilder().create();
         String msgToJson = gson.toJson(Msg);
         for (ChatAnnotation client : connections) {
-            if (client.session.getId().equals("receiver")) {
+            if (client.nickname.equals(receiver)) {
                 try {
                     synchronized (client) { // 同步锁
                         client.session.getBasicRemote().sendText(msgToJson);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    connections.remove(client);
+                    try {
+                        client.session.close();
+                    } catch (IOException e1) {
+                        // Ignore
+                    }
+                    String disconnect = String.format("用户 %s %s", client.nickname, "连接已中断");
+                    broadcast(disconnect, sender, LocalDateTime.now(), Message.QUIT);
                 }
             }
         }
     }
 
     private static String[] getOnlineList() {
-        String[] onlineList = new String[connections.size() + 5];
+        String[] onlineList = new String[connections.size()];
         int i = 0;
         for (ChatAnnotation client : connections) {
-            onlineList[i++] = client.session.getId();
+            synchronized (client) {
+                onlineList[i++] = client.nickname;
+            }
         }
         return onlineList;
     }
