@@ -38,13 +38,13 @@
             <a style="border: 0; " href="GroupChat.html" class="collection-item grey lighten-4 grey-text hoverable"><i
                     class="material-icons "
                     style="vertical-align:bottom">group</i>&nbsp;&nbsp;我的群组</a>
-            <a style="border: 0; " href="" class="collection-item grey lighten-4 grey-text hoverable"><i
+            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable"><i
                     class="material-icons "
                     style="vertical-align:bottom">question_answer</i>&nbsp;&nbsp;在线客服</a>
-            <a style="border: 0; " href="" class="collection-item grey lighten-4 grey-text hoverable"><i
+            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable"><i
                     class="material-icons"
-                    style="vertical-align:bottom">person</i>&nbsp;&nbsp;我的好友</a>
-            <div id="onlineList">
+                    style="vertical-align:bottom">person</i>&nbsp;&nbsp;在线用户</a>
+            <div id="onlineList" style="padding: 0 13px;">
                 <!--在线用户列表-->
             </div>
         </div>
@@ -104,7 +104,7 @@
                 {
                     Console.log(Message.content); // 接收窗口显示上线信息
                     document.getElementById('onlineList').innerHTML += "" +
-                        "<button id='user" + Message.sender + "'>" + Message.sender + "</button>";
+                        "<button class='btn waves-effect waves-light grey' id='user" + Message.sender + "'>" + Message.sender + "</button>";
                 }
                 else if (Message.type === 1) {
                     Console.log(Message.content); // 接收窗口直接显示聊天信息
@@ -124,7 +124,7 @@
                     for (var i in list) {
                         if (list[i] !== me) {
                             document.getElementById('onlineList').innerHTML += "" +
-                                "<button id='user" + list[i] + "'>" + list[i] + "</button>";
+                                "<button class='btn waves-effect waves-light grey' id='user" + list[i] + "'>" + list[i] + "</button>";
                         }
                     }
                 }
