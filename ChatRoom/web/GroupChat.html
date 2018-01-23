@@ -38,9 +38,6 @@
             <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable" onclick="goGroup()"><i
                     class="material-icons "
                     style="vertical-align:bottom">group</i>&nbsp;&nbsp;我的群组</a>
-            <a style="border: 0; " class="collection-item grey lighten-4 grey-text hoverable" onclick="goService()"><i
-                    class="material-icons "
-                    style="vertical-align:bottom">question_answer</i>&nbsp;&nbsp;在线客服</a>
             <a style="border: 0; " class="collection-item grey lighten-4 grey-text"><i
                     class="material-icons"
                     style="vertical-align:bottom">person</i>&nbsp;&nbsp;在线用户</a>
@@ -82,7 +79,7 @@
                 Chat.socket = new MozWebSocket(host);
             }
             else {
-                Console.log('错误：WebSocket 不支持您的浏览器');
+                Console.log('错误：您的浏览器不支持 WebSocket');
                 return;
             }
 
@@ -115,6 +112,9 @@
                 {
                     Console.log(Message.content); // 接收窗口显示离线信息
                     var offlineUser = document.getElementById('user' + Message.sender);
+                    if (Message.sender === receiver) {
+                        goGroup();
+                    }
                     var parent = offlineUser.parentElement;
                     parent.removeChild(offlineUser);
                 }
@@ -177,11 +177,6 @@
             receiver = this.id.substring(4);
             document.getElementById('chatTitle').innerText = "用户" + receiver;
         });
-
-        function goService() {
-            document.getElementById("chatTitle").innerText = "在线客服";
-            receiver = "service";
-        }
     </script>
 </div>
 </body>
