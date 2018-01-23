@@ -1,3 +1,9 @@
+/**
+ * 描述服务器与客户端之间的消息
+ *
+ * @author 舒意恒
+ */
+
 import java.time.LocalDateTime;
 
 public class Message {

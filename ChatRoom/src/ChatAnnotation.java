@@ -1,3 +1,9 @@
+/**
+ * 在服务器上描述一个客户端连接
+ *
+ * @author 舒意恒
+ */
+
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
